@@ -27,7 +27,15 @@ class TestDataset:
         if request.param == "threadpool":
             cm = futures.ThreadPoolExecutor
         else:
-            cm = contextlib.nullcontext
+            try:
+                cm = contextlib.nullcontext
+            except AttributeError:
+                # `nullcontext`` is Python 3.7+ feature.
+                @contextlib.contextmanager
+                def nullcontext(*args, **kwargs):
+                    yield
+
+                cm = lambda: nullcontext()
         with cm() as tp:
             yield tp
 
